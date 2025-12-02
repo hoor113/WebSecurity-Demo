@@ -1,0 +1,40 @@
+.navbar {
+  background-color: #1976d2 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.navbar-brand {
+  color: white !important;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+  opacity: 0.8;
+}
+
+/* Button styles */
+.navbar .MuiButton-root {
+  text-transform: none !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .MuiToolbar-root {
+    padding: 0 16px !important;
+  }
+  
+  .MuiTypography-h6 {
+    font-size: 1.1rem !important;
+  }
+  
+  .navbar .MuiButton-root {
+    padding: 6px 8px !important;
+    font-size: 0.875rem !important;
+  }
+} 

