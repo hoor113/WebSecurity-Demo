@@ -15,7 +15,7 @@ const sessionConfig = session({
     httpOnly: false,
     secure: false,
     sameSite: 'lax', 
-    path: '/',
+    path: '/'
   }
 });
 

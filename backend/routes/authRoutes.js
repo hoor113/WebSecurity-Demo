@@ -123,7 +123,8 @@ router.get('/balance', (req, res) => {
 router.post('/transfer', (req, res) => {
     console.log("req.session.user:", req.session);
     if (!req.session.user) {
-        req.session.user = { username: 'user1' }; // For testing purposes
+        // req.session.user = { username: 'user1' }; // For testing purposes
+        return res.status(401).json({ success: false, message: 'Not authenticated' });
     }
 
     const { amount, to } = req.body;
